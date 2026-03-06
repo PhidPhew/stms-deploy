@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* fade in */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
+}
+
+/* inputs */
+.input {
+  @apply w-full mb-3 px-4 py-3 rounded-lg bg-slate-800 text-white
+    placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500;
+}
+
+/* buttons */
+.btn-primary {
+  @apply w-full py-3 rounded-lg bg-green-500 hover:bg-green-600
+    font-semibold text-white transition;
+}
+
+.role-btn {
+  @apply p-3 rounded-lg border border-slate-700 text-slate-400;
+}
+
+.active-student {
+  @apply border-green-500 bg-green-500/10 text-green-400;
+}
+
+.active-coach {
+  @apply border-blue-500 bg-blue-500/10 text-blue-400;
+}
+
+/* 💥 BALL BURST */
+@keyframes ball-burst {
+  0% {
+    transform: scale(0.3) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.2) translateY(-180px);
+    opacity: 0;
+  }
+}
+
+.ball-burst {
+  position: absolute;
+  font-size: 28px;
+  animation: ball-burst 1.4s ease-out forwards;
+}
+
