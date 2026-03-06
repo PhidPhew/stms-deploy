@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  COACH
+  STUDENT
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  email     String     @unique
+  password  String
+  name      String
+  role      Role       @default(STUDENT)
+  status    UserStatus @default(ACTIVE)
+  dob       DateTime?
+  phone     String?
+  sports    String?    // JSON string array or comma-separated
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  coachProfile   CoachProfile?
+  enrollments    Enrollment[]
+  payments       Payment[]
+  attendance     Attendance[]
+}
+
+enum CoachStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model CoachProfile {
+  id        Int         @id @default(autoincrement())
+  userId    Int         @unique
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expertise String      // JSON string array or comma-separated
+  status    CoachStatus @default(ACTIVE)
+  
+  courses   Course[]
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Course {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String       @db.Text
+  coachId     Int
+  coach       CoachProfile @relation(fields: [coachId], references: [id])
+  price       Float
+  status      CourseStatus @default(DRAFT)
+  level       CourseLevel?
+  startDate   DateTime?
+  endDate     DateTime?
+  classDays   String?      // JSON array of integers [0-6]
+  
+  enrollments Enrollment[]
+  schedules   Schedule[]
+}
+
+model Enrollment {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  student   User     @relation(fields: [studentId], references: [id])
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+  
+  @@unique([studentId, courseId])
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Payment {
+  id         Int           @id @default(autoincrement())
+  studentId  Int
+  student    User          @relation(fields: [studentId], references: [id])
+  courseId   Int?          
+  amount     Float
+  slipUrl    String
+  status     PaymentStatus @default(PENDING)
+  approvedAt DateTime?
+  createdAt  DateTime      @default(now())
+}
+
+model FinanceRecord {
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  name        String
+  description String?
+  amount      Float
+  type        String   // "revenue" or "expense"
+  createdAt   DateTime @default(now())
+}
+
+model Schedule {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+  date      DateTime
+  startTime String?  // e.g., "10:00"
+  endTime   String?  // e.g., "12:00"
+  
+  attendance Attendance[]
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+model Attendance {
+  id         Int              @id @default(autoincrement())
+  scheduleId Int
+  schedule   Schedule         @relation(fields: [scheduleId], references: [id])
+  studentId  Int
+  student    User             @relation(fields: [studentId], references: [id])
+  status     AttendanceStatus
+  time       String?          // Time of check-in
+  createdAt  DateTime         @default(now())
+  
+  @@unique([scheduleId, studentId])
+}
