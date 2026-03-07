@@ -182,4 +182,4 @@ export default function HomePage() {
       </footer>
     </main>
   )
-}git pull
+}
