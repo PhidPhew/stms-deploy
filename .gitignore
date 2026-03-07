@@ -12,8 +12,6 @@ out/
 dist/
 build/
 
-# Prisma migrations (generated locally)
-prisma/migrations/
 
 # Logs
 *.log
