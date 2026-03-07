@@ -44,7 +44,7 @@ npm run dev
 ### 3. Start frontend
 
 ```bash
-cd ../frontend
+cd frontend
 npm install
 npm run dev
 # → http://localhost:3000
