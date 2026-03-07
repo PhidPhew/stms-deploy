@@ -22,7 +22,7 @@ export default function CourseForm({ coaches }: Props) {
       >
         <option value="">Select coach</option>
         {coaches
-          .filter(c => c.status === "active")
+          .filter(c => c.status.toLowerCase() === "active")
           .map(c => (
             <option key={c.id} value={c.id}>
               {c.name} ({c.expertise.join(", ")})

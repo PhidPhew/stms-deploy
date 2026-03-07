@@ -18,6 +18,7 @@ export async function GET(req: Request) {
     const formattedPayments = payments.map(p => ({
       id: p.id,
       date: p.createdAt.toISOString().split("T")[0],
+      courseId: p.courseId,
       course: p.course?.title || "General",
       amount: p.amount,
       status: p.status.toLowerCase()

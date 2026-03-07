@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import axios from "@/lib/axios"
 
+
 export default function RegisterPage() {
   const router = useRouter()
 
@@ -21,7 +22,7 @@ export default function RegisterPage() {
   const [openSports, setOpenSports] = useState(false)
 
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState<string | null>(null)
 
   const toggleSport = (sport: string) => {
     setSports((prev) =>
@@ -32,23 +33,20 @@ export default function RegisterPage() {
   }
 
   const handleSubmit = async () => {
-    setError("")
     setLoading(true)
-
+    setError(null)
     try {
       await axios.post("/api/auth/register", {
-        name,
-        email,
-        password,
-        role: role.toUpperCase(),
+        name, email, password, dob, phone, role, sports,
       })
       router.push("/login")
     } catch (err: any) {
-      setError(err.response?.data?.error || "Registration failed. Please try again.")
+      setError(err.response?.data?.message || "Registration failed")
     } finally {
       setLoading(false)
     }
   }
+
 
   return (
     <div
@@ -67,13 +65,6 @@ export default function RegisterPage() {
             Start your training journey today
           </p>
         </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-4 px-4 py-3 rounded-lg bg-red-500/20 border border-red-500/40 text-red-300 text-sm">
-            {error}
-          </div>
-        )}
 
         {/* ACCOUNT */}
         <input
@@ -100,6 +91,30 @@ export default function RegisterPage() {
           onChange={(e) => setPassword(e.target.value)}
           className="w-full mb-6 px-4 py-3 rounded-lg bg-slate-800 text-white"
           required
+        />
+
+        {/* PROFILE */}
+        <div className="mb-4">
+          <label className="block text-sm text-slate-400 mb-1">
+            Date of Birth
+          </label>
+          <input
+            type="date"
+            value={dob}
+            onChange={(e) => setDob(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg bg-slate-800 text-white"
+          />
+          <p className="text-xs text-slate-500 mt-1">
+            
+          </p>
+        </div>
+
+        <input
+          type="tel"
+          placeholder="Phone number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full mb-4 px-4 py-3 rounded-lg bg-slate-800 text-white"
         />
 
         {/* ROLE */}
@@ -132,10 +147,14 @@ export default function RegisterPage() {
           </button>
         </div>
 
+ 
+
+          {error && <p className="text-red-400 text-sm text-center mt-2">{error}</p>}
+
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full py-3 rounded-lg bg-green-500 hover:bg-green-600 text-white font-semibold disabled:opacity-60"
+          className="w-full py-3 rounded-lg bg-green-500 hover:bg-green-600 text-white font-semibold"
         >
           {loading ? "Creating account..." : "Create Account"}
         </button>

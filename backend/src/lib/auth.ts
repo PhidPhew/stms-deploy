@@ -12,7 +12,7 @@ export async function getUserFromHeaders(req: Request) {
       token = authHeader.substring(7)
     } else {
       // Fallback to cookie
-      const cookieStore = cookies()
+      const cookieStore = await cookies()
       token = cookieStore.get("token")?.value || ""
     }
 
@@ -59,7 +59,7 @@ export async function requireRole(req: Request, roles: Role | Role[]) {
 }
 
 export async function getCurrentUser() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const token = cookieStore.get("token")?.value
   if (!token) return null
 

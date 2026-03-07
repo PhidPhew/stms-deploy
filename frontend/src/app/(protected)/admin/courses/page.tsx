@@ -1,80 +1,65 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import axios from "@/lib/axios"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { CourseStatus, CourseLevel, Course } from "@/types/course"
+import { CourseCard } from "@/components/admin/courses/CourseCard"
+import { CourseTable } from "@/components/admin/courses/CourseTable"
 import { AddCourseModal } from "@/components/admin/courses/AddCourseModal"
-import { EditCourseModal } from "@/components/admin/courses/EditCourseModal"
-import { DeleteCourseModal } from "@/components/admin/courses/DeleteCourseModal"
+import axios from "@/lib/axios"
 
-type Course = {
+/* ================= TYPES ================= */
+
+export type Student = {
   id: number
-  title: string
-  price: number
-  status: string
-  level?: string
-  enrolledStudents?: number
-  startDate?: string
-  endDate?: string
-  coachId?: number
+  name: string
+  email: string
 }
 
-export default function AdminCoursesPage() {
-  const [courses, setCourses] = useState<Course[]>([])
-  const [loading, setLoading] = useState(true)
+export type CourseWithStudents = Course & {
+  students?: Student[]
+}
+
+/* ================= PAGE ================= */
+
+export default function CoursesPage() {
+  const router = useRouter()
   const [openAdd, setOpenAdd] = useState(false)
-  const [editTarget, setEditTarget] = useState<Course | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<Course | null>(null)
+  const [courses, setCourses] = useState<CourseWithStudents[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const fetchCourses = async () => {
-    try {
-      const res = await axios.get("/api/admin/courses")
-      setCourses(res.data?.data || [])
-    } catch (err) {
-      console.error("Courses fetch error:", err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => { fetchCourses() }, [])
-
-  const handleAdd = async (payload: Partial<Course>) => {
-    try {
-      await axios.post("/api/admin/courses", payload)
-      await fetchCourses()
-      setOpenAdd(false)
-    } catch (err: any) {
-      alert(err.response?.data?.error || "Failed to add course")
-    }
-  }
-
-  const handleEdit = async (id: number, payload: Partial<Course>) => {
-    try {
-      await axios.put(`/api/admin/courses/${id}`, payload)
-      await fetchCourses()
-      setEditTarget(null)
-    } catch (err: any) {
-      alert(err.response?.data?.error || "Failed to update course")
-    }
-  }
-
-  const handleDelete = async (id: number) => {
-    try {
-      await axios.delete(`/api/admin/courses/${id}`)
-      await fetchCourses()
-      setDeleteTarget(null)
-    } catch (err: any) {
-      alert(err.response?.data?.error || "Failed to delete course")
-    }
-  }
+  useEffect(() => {
+    axios.get("/api/admin/courses")
+      .then((res) => {
+  const courses = (res.data.data ?? []).map((c: any) => ({
+    ...c,
+    classDays: typeof c.classDays === "string" ? JSON.parse(c.classDays) : (c.classDays ?? []),
+    coach: c.coach?.user?.name ?? c.coach?.name ?? "-",
+    students: Array(c._count?.enrollments ?? 0).fill({}),
+  }))
+  setCourses(courses)
+})
+      .catch((err) => {
+        if (err.response?.status === 401) { localStorage.removeItem("token"); router.push("/login") }
+        else setError("Failed to load courses")
+      })
+      .finally(() => setLoading(false))
+  }, [router])
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-10">
+      {/* ===== Header ===== */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-blue-900">Course Management</h1>
-          <p className="text-gray-500 text-sm">Manage courses offered by the academy</p>
+          <h1 className="text-2xl font-bold text-blue-900">
+            Course Management
+          </h1>
+          <p className="text-sm text-gray-500">
+            Manage courses, students, and details
+          </p>
         </div>
+
         <button
           onClick={() => setOpenAdd(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md"
@@ -83,74 +68,62 @@ export default function AdminCoursesPage() {
         </button>
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center h-32 text-gray-400">Loading courses...</div>
-      ) : courses.length === 0 ? (
-        <div className="bg-white rounded-xl border p-8 text-center text-gray-500">
-          No courses found. Add your first course.
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-gray-500 border-b bg-gray-50">
-                <th className="py-3 px-4">Title</th>
-                <th className="px-4">Price</th>
-                <th className="px-4">Level</th>
-                <th className="px-4">Status</th>
-                <th className="px-4">Students</th>
-                <th className="px-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {courses.map((course) => (
-                <tr key={course.id} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-4 font-medium text-blue-900">{course.title}</td>
-                  <td className="px-4">฿{course.price?.toLocaleString() ?? 0 }</td>
-                  <td className="px-4 capitalize">{course.level?.toLowerCase() || "—"}</td>
-                  <td className="px-4">
-                    <span className={`text-xs px-2 py-1 rounded-full
-                      ${course.status === "PUBLISHED" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
-                      {course.status}
-                    </span>
-                  </td>
-                  <td className="px-4 text-gray-600">{course.enrolledStudents ?? 0}</td>
-                  <td className="px-4">
-                    <div className="flex gap-2">
-                      <button onClick={() => setEditTarget(course)} className="text-xs text-blue-600 hover:underline">Edit</button>
-                      <button onClick={() => setDeleteTarget(course)} className="text-xs text-red-600 hover:underline">Delete</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {loading && <p className="text-gray-500">Loading...</p>}
+      {error && <p className="text-red-500">{error}</p>}
 
-      {openAdd && (
-        <AddCourseModal
-          open={openAdd}
-          onClose={() => setOpenAdd(false)}
-          onAdd={(c: any) => handleAdd(c)}
-        />
-      )}
-      {editTarget && (
-        <EditCourseModal
-          open={!!editTarget}
-          course={editTarget as any}
-          onClose={() => setEditTarget(null)}
-          onSave={(updated: any) => handleEdit(editTarget.id, updated)}
-        />
-      )}
-      {deleteTarget && (
-        <DeleteCourseModal
-          open={!!deleteTarget}
-          course={deleteTarget as any}
-          onClose={() => setDeleteTarget(null)}
-          onConfirm={() => handleDelete(deleteTarget.id)}
-        />
-      )}
+      {/* ===== Table View (ของเดิม) ===== */}
+      <CourseTable
+        courses={courses}
+        onUpdate={async (updated) => {
+          try {
+            await axios.put(`/api/admin/courses/${updated.id}`, updated)
+            setCourses((prev) =>
+              prev.map((c) => (c.id === updated.id ? updated : c))
+            )
+          } catch { setError("Failed to update course") }
+        }}
+        onDelete={async (id) => {
+          try {
+            await axios.delete(`/api/admin/courses/${id}`)
+            setCourses((prev) => prev.filter((c) => c.id !== id))
+          } catch { setError("Failed to delete course") }
+        }}
+      />
+
+      {/* ===== Card / Classroom View ===== */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4 text-blue-600">
+          Available Courses
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {courses.map((course) => (
+            <CourseCard
+              key={course.id}
+              course={course}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* ===== Modal ===== */}
+      <AddCourseModal
+        open={openAdd}
+        onClose={() => setOpenAdd(false)}
+        onAdd={async (course) => {
+          try {
+            const res = await axios.post("/api/admin/courses", course)
+            setCourses((prev) => [
+              ...prev,
+              {
+                id: res.data.data?.id ?? Date.now(),
+                ...res.data.data,
+                students: [],
+              },
+            ])
+          } catch { setError("Failed to add course") }
+        }}
+      />
     </div>
   )
 }

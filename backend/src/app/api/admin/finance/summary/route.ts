@@ -13,6 +13,7 @@ export async function GET(req: Request) {
 
     // 2. Total Courses
     const totalCourses = await prisma.course.count()
+    const totalCoaches = await prisma.user.count({ where: { role: "COACH" } })
 
     // 3. Financial Totals
     const financeRecords = await prisma.financeRecord.findMany()
@@ -48,6 +49,7 @@ export async function GET(req: Request) {
       success: true,
       data: {
         totalStudents,
+        totalCoaches,
         totalCourses,
         totalRevenue,
         totalExpense,

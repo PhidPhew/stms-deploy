@@ -32,7 +32,10 @@ type Props = {
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-function formatDays(days?: number[]) {
+function formatDays(days?: number[] | string) {
+  if (typeof days === "string") {
+    try { days = JSON.parse(days) } catch { return days }
+  }
   if (!days || days.length === 0) return "-"
   return days.map((d) => DAY_LABELS[d]).join(", ")
 }

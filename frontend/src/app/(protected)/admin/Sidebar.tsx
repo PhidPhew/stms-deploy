@@ -50,7 +50,7 @@ export function Sidebar() {
       {/* Bottom */}
       <div className="border-t p-4">
         <button
-          onClick={() => router.push("/login")}
+          onClick={() => { localStorage.removeItem("token"); router.push("/login") }}
           className="
             flex items-center gap-2 text-sm w-full
             text-red-600 hover:text-red-700

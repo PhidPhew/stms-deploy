@@ -60,7 +60,7 @@ function getIcon(type: NotificationType) {
 }
 
 function getLink(type: NotificationType) {
-  if (type === "payment") return "/student/payments"
+  if (type === "payment") return "/student/payment"
   if (type === "course") return "/student/courses"
   return null
 }

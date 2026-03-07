@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+
 export type AttendanceStatus = "present" | "absent"
 
 export type Attendance = {
@@ -23,10 +25,22 @@ export default function TodayClasses({
 
   return (
     <div className="bg-white border rounded-2xl p-5 space-y-3">
-      <p className="font-medium flex items-center gap-2">
-        📅 Today&apos;s Classes
-      </p>
+      {/* ===== HEADER ===== */}
+      <div className="flex items-center justify-between">
+        <p className="font-medium flex items-center gap-2">
+          📅 Today&apos;s Classes
+        </p>
 
+        {/* 🔗 LINK ไปหน้า Attendance */}
+        <Link
+          href="/student/attendance"
+          className="text-sm text-blue-600 hover:underline"
+        >
+          View all →
+        </Link>
+      </div>
+
+      {/* ===== CONTENT ===== */}
       {todayClasses.length === 0 ? (
         <div className="text-sm text-gray-500 bg-gray-50 rounded-xl p-4 text-center">
           No classes scheduled for today 🎉

@@ -141,9 +141,9 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { name: "Chawankorn Khamtue", id: "6710503844", emoji: "📊" },
-            { name: "Naravin Vechpanich", id: "6710503895", emoji: "🎨" },
-            { name: "Achiraya Charoenpanvorakul", id: "6710504450", emoji: "⚙️" },
+            { name: "Chawankorn Khamtue", id: "6710503895", emoji: "📊" },
+            { name: "Naravin Vechpanich", id: "6710504450", emoji: "🎨" },
+            { name: "Achiraya Charoenpanvorakul", id: "6710503844", emoji: "⚙️" },
           ].map((m, i) => (
             <motion.div
               key={m.id}

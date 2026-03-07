@@ -18,6 +18,21 @@ export function CoachTable({
   onSoftDelete,
 }: Props) {
   const [editCoach, setEditCoach] = useState<Coach | null>(null)
+  const [sortKey, setSortKey] = useState<keyof Coach | null>(null)
+  const [sortAsc, setSortAsc] = useState(true)
+
+  const handleSort = (key: keyof Coach) => {
+    if (sortKey === key) setSortAsc(!sortAsc)
+    else { setSortKey(key); setSortAsc(true) }
+  }
+
+  const sorted = [...coaches].sort((a, b) => {
+    if (!sortKey) return 0
+    const av = a[sortKey] ?? ""; const bv = b[sortKey] ?? ""
+    return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1)
+  })
+
+  const arrow = (key: keyof Coach) => sortKey === key ? (sortAsc ? " ▲" : " ▼") : " ↕"
   const [deleteCoach, setDeleteCoach] = useState<Coach | null>(null)
   const [historyCoach, setHistoryCoach] = useState<Coach | null>(null)
 
@@ -27,24 +42,26 @@ export function CoachTable({
         <table className="w-full text-sm">
           <thead className="border-b text-gray-500">
             <tr>
-              <th className="text-left p-4">Name</th>
-              <th className="text-left p-4">Expertise</th>
-              <th className="text-left p-4">Courses</th>
-              <th className="text-left p-4">Status</th>
+              <th className="text-left p-4 cursor-pointer select-none" onClick={() => handleSort("id")}>ID{arrow("id")}</th>
+              <th className="text-left p-4 cursor-pointer select-none" onClick={() => handleSort("name")}>Name{arrow("name")}</th>
+              <th className="text-left p-4 cursor-pointer select-none" onClick={() => handleSort("expertise")}>Expertise{arrow("expertise")}</th>
+              <th className="text-left p-4 cursor-pointer select-none" onClick={() => handleSort("totalCourses")}>Courses{arrow("totalCourses")}</th>
+              <th className="text-left p-4 cursor-pointer select-none" onClick={() => handleSort("status")}>Status{arrow("status")}</th>
               <th className="text-right p-4">Action</th>
             </tr>
           </thead>
 
           <tbody>
-            {coaches.map((c) => (
+            {sorted.map((c) => (
               <tr key={c.id} className="border-b hover:bg-gray-50">
+                <td className="p-4 text-gray-400">{c.id}</td>
                 <td className="p-4 font-medium text-blue-900">{c.name}</td>
                 <td className="p-4 text-blue-900">{c.expertise.join(", ")}</td>
                 <td className="p-4 text-blue-900">{c.totalCourses}</td>
                 <td className="p-4">
                   <span
                     className={`px-3 py-1 rounded-full text-xs ${
-                      c.status === "active"
+                      c.status.toLowerCase() === "active"
                         ? "bg-green-100 text-green-700"
                         : "bg-gray-100 text-gray-600"
                     }`}
@@ -67,7 +84,7 @@ export function CoachTable({
                     Edit
                   </button>
 
-                  {c.status === "active" && (
+                  {c.status.toLowerCase() === "active" && (
                     <button
                       onClick={() => setDeleteCoach(c)}
                       className="text-red-600 hover:underline"

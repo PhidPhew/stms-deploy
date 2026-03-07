@@ -105,7 +105,7 @@ model Payment {
   courseId   Int?  
   course     Course?       @relation(fields: [courseId], references: [id])        
   amount     Float
-  slipUrl    String
+  slipUrl    String?  @db.LongText
   status     PaymentStatus @default(PENDING)
   approvedAt DateTime?
   createdAt  DateTime      @default(now())

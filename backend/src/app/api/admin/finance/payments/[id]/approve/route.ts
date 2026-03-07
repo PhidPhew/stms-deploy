@@ -61,7 +61,18 @@ export async function POST(
         }
       })
 
-      return { updatedPayment, newFinanceRecord }
+      // Auto 70% coach payout
+      const coachPayout = Math.round(existingPayment.amount * 0.7)
+      const coachExpense = await tx.financeRecord.create({
+        data: {
+          date: approvedDate,
+          name: "Coach Payout (70%)",
+          description: `Auto payout to coach for ${existingPayment.course?.title || "General"}`,
+          amount: coachPayout,
+          type: "expense"
+        }
+      })
+      return { updatedPayment, newFinanceRecord, coachExpense }
     })
 
     await createLog(

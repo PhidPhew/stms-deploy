@@ -72,7 +72,7 @@ export function EditUserModal({
                 Role
               </label>
               <select
-                className="w-full mt-1 border rounded-md px-3 py-2 "
+                className="w-full mt-1 border rounded-md px-3 py-2 text-gray-400"
                 value={role}
                 onChange={(e) =>
                   setRole(e.target.value as UserRole)
@@ -90,7 +90,7 @@ export function EditUserModal({
               Status
             </label>
             <select
-              className="w-full mt-1 border rounded-md px-3 py-2"
+              className="w-full mt-1 border rounded-md px-3 py-2 text-gray-400"
               value={status}
               onChange={(e) =>
                 setStatus(e.target.value as UserStatus)

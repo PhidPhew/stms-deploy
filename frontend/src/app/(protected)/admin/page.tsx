@@ -1,82 +1,82 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import Header from "@/components/admin/dashboard/Header"
 import { StatCard } from "@/components/admin/dashboard/StatCard"
 import { MonthlyRevenueChart } from "@/components/admin/dashboard/MonthlyRevenueChart"
-import { Users, BookOpen, Wallet, TrendingDown } from "lucide-react"
 import axios from "@/lib/axios"
 
-type SummaryData = {
-  totalStudents: number
-  totalCourses: number
-  totalRevenue: number
-  totalExpense: number
-  chartData: { month: string; revenue: number; expense: number; profit: number }[]
-}
+// icons
+import { Users, BookOpen, Wallet, TrendingDown, Dumbbell } from "lucide-react"
 
 export default function AdminDashboard() {
-  const [data, setData] = useState<SummaryData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+  const [summary, setSummary] = useState({
+    totalStudents: 0,
+    totalCoaches: 0,
+    totalCourses: 0,
+    totalRevenue: 0,
+    chartData: [] as any[],
+    totalExpense: 0,
+  })
 
   useEffect(() => {
-    const fetchSummary = async () => {
-      try {
-        const res = await axios.get("/api/admin/finance/summary")
-        setData(res.data?.data || null)
-      } catch (err) {
-        console.error("Admin dashboard fetch error:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchSummary()
-  }, [])
+    axios.get("/api/admin/finance/summary")
+      .then((res) => setSummary(res.data.data))
+      .catch((err) => {
+        if (err.response?.status === 401) { localStorage.removeItem("token"); router.push("/login") }
+      })
+  }, [router])
 
   return (
     <div className="p-6 space-y-6">
       <Header />
 
-      {loading ? (
-        <div className="flex items-center justify-center h-32 text-gray-400">Loading stats...</div>
-      ) : (
-        <>
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              title="Students"
-              value={data?.totalStudents ?? 0}
-              icon={Users}
-              changePercent={0}
-              href="/admin/users"
-            />
-            <StatCard
-              title="Courses"
-              value={data?.totalCourses ?? 0}
-              icon={BookOpen}
-              changePercent={0}
-              href="/admin/courses"
-            />
-            <StatCard
-              title="Revenue"
-              value={data?.totalRevenue ?? 0}
-              icon={Wallet}
-              changePercent={0}
-              href="/admin/payments"
-            />
-            <StatCard
-              title="Expense"
-              value={data?.totalExpense ?? 0}
-              icon={TrendingDown}
-              changePercent={0}
-              href="/admin/payments"
-            />
-          </div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <StatCard
+          title="Students"
+          value={summary.totalStudents}
+          icon={Users}
+          changePercent={0}
+          href="/admin/users"
+        />
 
-          {/* Chart */}
-          <MonthlyRevenueChart />
-        </>
-      )}
+        <StatCard
+          title="Coaches"
+          value={summary.totalCoaches}
+          icon={Dumbbell}
+          changePercent={0}
+          href="/admin/coach"
+        />
+        <StatCard
+          title="Courses"
+          value={summary.totalCourses}
+          icon={BookOpen}
+          changePercent={0}
+          href="/admin/courses"
+        />
+
+        <StatCard
+          title="Revenue"
+          value={summary.totalRevenue}
+          icon={Wallet}
+          changePercent={0}
+          href="/admin/payments"
+        />
+
+        <StatCard
+          title="Expense"
+          value={summary.totalExpense}
+          icon={TrendingDown}
+          changePercent={0}
+          href="/admin/payments"
+        />
+      </div>
+
+      {/* Chart */}
+      <MonthlyRevenueChart data={summary.chartData} />
     </div>
   )
 }

@@ -3,10 +3,10 @@ import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 import { createLog } from "@/lib/auditLog"
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const admin = await requireRole(req, "ADMIN")
-    const courseId = parseInt(params.id)
+    const { id } = await params; const courseId = parseInt(id)
     if (isNaN(courseId)) {
       return NextResponse.json({ success: false, error: "Invalid course ID" }, { status: 400 })
     }
@@ -50,10 +50,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const admin = await requireRole(req, "ADMIN")
-    const courseId = parseInt(params.id)
+    const { id } = await params; const courseId = parseInt(id)
     if (isNaN(courseId)) {
       return NextResponse.json({ success: false, error: "Invalid course ID" }, { status: 400 })
     }

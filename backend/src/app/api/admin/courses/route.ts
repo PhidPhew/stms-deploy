@@ -8,13 +8,11 @@ export async function GET(req: Request) {
 
     const courses = await prisma.course.findMany({
       include: {
+        _count: { select: { enrollments: true } },
         coach: {
           include: {
             user: {
-              select: {
-                name: true,
-                email: true
-              }
+              select: { name: true, email: true }
             }
           }
         }
@@ -41,7 +39,6 @@ export async function POST(req: Request) {
     await requireRole(req, "ADMIN")
 
     const body = await req.json()
-    console.log("COURSE BODY:", body)
 
     const {
       title,

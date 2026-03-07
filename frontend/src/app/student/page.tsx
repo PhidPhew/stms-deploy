@@ -1,23 +1,44 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { Home, Bell } from "lucide-react"
+import { useState, useEffect } from "react"
 import axios from "@/lib/axios"
+import Link from "next/link"
+import {Home,Bell} from "lucide-react"
+import TodayClasses, {
+  Attendance,
+} from "@/components/student/TodayClasses"
 
-type TodayClass = {
-  id: number
-  date: string
-  time?: string
-  course: string
-  status: string
-}
+/* ================= TYPES ================= */
 
-type MyCourse = {
+export type EnrolledCourse = {
   id: number
   title: string
-  progress: number
-  status: string
+  totalSessions: number
+  attendedSessions: number
+  startDate: string
+  endDate: string
+  nextClassDate?: string
+}
+
+
+
+/* ================= HELPERS ================= */
+
+function daysLeft(endDate: string) {
+  const end = new Date(endDate).getTime()
+  const now = new Date().getTime()
+  return Math.max(
+    Math.ceil((end - now) / (1000 * 60 * 60 * 24)),
+    0
+  )
+}
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
 }
 
 function progressColor(progress: number) {
@@ -27,111 +48,158 @@ function progressColor(progress: number) {
   return "bg-red-500"
 }
 
+function statusLabel(progress: number) {
+  if (progress === 100)
+    return { text: "Completed", color: "bg-green-100 text-green-700" }
+  if (progress >= 60)
+    return { text: "On Track", color: "bg-blue-100 text-blue-700" }
+  return { text: "Behind", color: "bg-yellow-100 text-yellow-700" }
+}
+
+/* ================= PAGE ================= */
+
 export default function StudentDashboard() {
-  const [todayClasses, setTodayClasses] = useState<TodayClass[]>([])
-  const [myCourses, setMyCourses] = useState<MyCourse[]>([])
-  const [loading, setLoading] = useState(true)
+  const [courses, setCourses] = useState<EnrolledCourse[]>([])
+  const [attendanceHistory, setAttendanceHistory] = useState<Attendance[]>([])
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const res = await axios.get("/api/student/dashboard")
-        const data = res.data?.data || {}
-        setTodayClasses(data.todayClasses || [])
-        setMyCourses(data.myCourses || [])
-      } catch (err) {
-        console.error("Student dashboard fetch error:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchDashboard()
+    axios.get("/api/student/dashboard").then((res) => {
+      setCourses(res.data.courses ?? [])
+      setAttendanceHistory(res.data.attendance ?? [])
+    })
   }, [])
-
-  if (loading) {
-    return <div className="p-6 flex items-center justify-center h-48 text-gray-400">Loading...</div>
-  }
 
   return (
     <div className="p-6 space-y-8 bg-gray-50 min-h-screen">
       {/* ===== GLOBAL HEADER ===== */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Home className="h-6 w-6 text-blue-700" />
-          <h1 className="text-2xl font-bold text-blue-900">Dashboard</h1>
-        </div>
-        <Link
-          href="/student/notifications"
-          className="relative h-10 w-10 flex items-center justify-center rounded-full hover:bg-blue-50 transition"
-        >
-          <Bell className="h-6 w-6 text-blue-700" />
-        </Link>
-      </div>
+  {/* Left: Title */}
+  <div className="flex items-center gap-3">
+    <Home className="h-6 w-6 text-blue-700" />
+    <h1 className="text-2xl font-bold text-blue-900">
+      Dashboard
+    </h1>
+  </div>
 
-      {/* ===== TODAY CLASSES ===== */}
-      <section className="bg-white rounded-xl border p-4 space-y-3">
-        <h2 className="font-semibold text-blue-900">📅 Today&apos;s Classes</h2>
-        {todayClasses.length === 0 ? (
-          <p className="text-sm text-gray-500">No classes today.</p>
-        ) : (
-          todayClasses.map((c) => (
-            <div key={c.id} className="border rounded-lg p-3 flex justify-between items-center">
-              <div>
-                <p className="font-medium">{c.course}</p>
-                <p className="text-xs text-gray-500">{c.time || c.date}</p>
-              </div>
-              <span
-                className={`text-xs px-2 py-1 rounded-full font-medium
-                  ${c.status === "present" ? "bg-green-100 text-green-700" :
-                    c.status === "absent" ? "bg-red-100 text-red-700" :
-                    "bg-gray-100 text-gray-600"}`}
-              >
-                {c.status}
-              </span>
-            </div>
-          ))
-        )}
-      </section>
+  {/* Right: Notification Bell */}
+  <Link
+    href="/student/notifications"
+    className="relative h-10 w-10 flex items-center justify-center
+               rounded-full hover:bg-blue-50 transition"
+  >
+    <Bell className="h-6 w-6 text-blue-700" />
 
-      {/* ===== MY COURSES ===== */}
+    {/* 🔴 Badge */}
+    <span
+      className="absolute -top-0.5 -right-0.5
+                 bg-red-500 text-white text-[10px]
+                 h-4 min-w-[16px] px-1
+                 flex items-center justify-center
+                 rounded-full"
+    >
+      3
+    </span>
+  </Link>
+</div>
+
+{/* ===== TODAY CLASSES ===== */}
+<div className="space-y-2">
+  <TodayClasses attendanceHistory={attendanceHistory} />
+</div>
+
+      {/* ===== MY COURSES HEADER ===== */}
       <div className="flex items-center gap-3">
-        <h2 className="text-lg font-semibold text-blue-900">My Active Courses</h2>
+        <h2 className="text-lg font-semibold text-blue-900">
+          My Active Courses
+        </h2>
         <div className="flex-1 h-px bg-gray-300" />
       </div>
 
-      {myCourses.length === 0 ? (
-        <div className="bg-white rounded-xl border p-6 text-center text-gray-500">
-          <p>You are not enrolled in any courses yet.</p>
-          <Link href="/student/courses" className="text-blue-600 underline mt-2 block text-sm">
-            Browse courses
-          </Link>
-        </div>
-      ) : (
-        <div className="grid gap-5 md:grid-cols-2">
-          {myCourses.map((course) => (
+      {/* ===== COURSES GRID ===== */}
+      <div className="grid gap-5 md:grid-cols-2">
+        {courses.map((course) => {
+          const progress =
+            (course.attendedSessions / course.totalSessions) * 100
+
+          const remainingSessions =
+            course.totalSessions - course.attendedSessions
+
+          const remainingDays = daysLeft(course.endDate)
+          const status = statusLabel(progress)
+
+          return (
             <div
               key={course.id}
-              className="bg-white rounded-xl border overflow-hidden transition hover:shadow-lg hover:-translate-y-0.5"
+              className="bg-white rounded-xl border overflow-hidden
+                         transition hover:shadow-lg hover:-translate-y-0.5"
             >
+              {/* ===== CARD HEADER ===== */}
               <div className="bg-blue-50 px-5 py-4 flex justify-between items-start border-b">
-                <div className="font-semibold text-lg text-blue-900">{course.title}</div>
-                <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 capitalize">
-                  {course.status}
+                <div>
+                  <div className="font-semibold text-lg text-blue-900">
+                    {course.title}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {formatDate(course.startDate)} –{" "}
+                    {formatDate(course.endDate)}
+                  </div>
+                </div>
+
+                <span
+                  className={`text-xs px-2 py-1 rounded ${status.color}`}
+                >
+                  {status.text}
                 </span>
               </div>
+
+              {/* ===== CARD BODY ===== */}
               <div className="p-5 space-y-4">
+                {/* Progress Info */}
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>
+                    {course.attendedSessions} /{" "}
+                    {course.totalSessions} sessions
+                  </span>
+                  <span>{remainingSessions} left</span>
+                </div>
+
+                {/* Progress Bar */}
                 <div className="w-full bg-gray-200 h-2 rounded overflow-hidden">
                   <div
-                    className={`h-2 transition-all duration-700 ${progressColor(course.progress)}`}
-                    style={{ width: `${course.progress}%` }}
+                    className={`h-2 transition-all duration-700 ${progressColor(
+                      progress
+                    )}`}
+                    style={{ width: `${progress}%` }}
                   />
                 </div>
-                <p className="text-sm text-gray-600">{course.progress}% complete</p>
+
+                <div className="h-px bg-gray-200" />
+
+                {/* Footer */}
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>
+                    ⏳ {remainingDays} days remaining
+                  </span>
+
+                  {course.nextClassDate && (
+                    <span>
+                      📅 Next class:{" "}
+                      {formatDate(course.nextClassDate)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Warning */}
+                {remainingDays <= 7 && (
+                  <div className="text-xs text-red-700 bg-red-50 px-3 py-2 rounded">
+                    ⚠️ This course is ending soon
+                  </div>
+                )}
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          )
+        })}
+      </div>
     </div>
   )
 }
