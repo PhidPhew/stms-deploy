@@ -22,7 +22,7 @@ export default function CoachSchedulePage() {
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
-        const res = await axios.get("/api/coach/schedule")
+        const res = await axios.get("api/coach/schedule")
         setClasses(res.data?.data || [])
       } catch (err) {
         console.error("Schedule fetch error:", err)
