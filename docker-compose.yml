@@ -1,0 +1,19 @@
+services:
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: stms_db
+      MYSQL_USER: stms_user
+      MYSQL_PASSWORD: stms_password
+    ports:
+      - "3306:3306"
+
+  mongodb:
+    image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: stms_admin
+      MONGO_INITDB_ROOT_PASSWORD: stms_mongo_password
+      MONGO_INITDB_DATABASE: stms_logs
+    ports:
+      - "27017:27017"
