@@ -4,7 +4,7 @@
 
 ---
 
-## 📋 Tech Stack
+## Tech Stack
 
 | ส่วน | เทคโนโลยี |
 |------|-----------|
@@ -16,7 +16,7 @@
 
 ---
 
-## 🗄️ การใช้งานฐานข้อมูล
+## การใช้งานฐานข้อมูล
 
 ### MySQL — ข้อมูลหลักของระบบ
 เก็บข้อมูลที่มีความสัมพันธ์กัน ได้แก่ Users, Courses, Schedules, Enrollments, Payments, Attendance และ FinanceRecords รองรับ CRUD ครบทุก operation
@@ -44,7 +44,7 @@ stms-system/
 
 ---
 
-## ⚙️ วิธี Setup และรัน
+## วิธี Setup และรัน
 
 ### Requirements
 - [Node.js](https://nodejs.org/) v18+
@@ -97,7 +97,7 @@ http://localhost:3000
 
 ---
 
-## 🔐 Default Account
+## Default Account
 
 | Role | Email | Password |
 |------|-------|----------|
@@ -107,7 +107,7 @@ http://localhost:3000
 
 ---
 
-## 👥 Roles และความสามารถ
+## Roles และความสามารถ
 
 | Role | URL | ความสามารถ |
 |------|-----|-----------|
@@ -117,7 +117,7 @@ http://localhost:3000
 
 ---
 
-## 🔄 Flow การ Enroll และชำระเงิน
+## Flow การ Enroll และชำระเงิน
 
 ```
 1. Student กด Enroll Course
@@ -135,7 +135,7 @@ http://localhost:3000
 
 ---
 
-## 🌐 API Endpoints
+## API Endpoints
 
 ### Auth
 | Method | Endpoint | คำอธิบาย |
@@ -173,7 +173,7 @@ http://localhost:3000
 
 ---
 
-## 🗃️ Database Schema (MySQL)
+## Database Schema (MySQL)
 
 ```
 User (ADMIN / COACH / STUDENT)
@@ -189,7 +189,7 @@ Course
 FinanceRecord (revenue / expense)
 ```
 
-## 📄 MongoDB Document Structure (Audit Log)
+## MongoDB Document Structure (Audit Log)
 
 ```json
 {
