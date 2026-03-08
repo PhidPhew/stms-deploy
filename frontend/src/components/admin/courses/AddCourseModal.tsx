@@ -1,7 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { CourseStatus } from "./CourseTable"
+import axios from "@/lib/axios"
+
+type Coach = {
+  id: number
+  name: string
+}
 
 type Props = {
   open: boolean
@@ -27,141 +33,72 @@ export function AddCourseModal({ open, onClose, onAdd }: Props) {
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
   const [classDays, setClassDays] = useState<number[]>([])
+  const [coaches, setCoaches] = useState<Coach[]>([])
 
-const handleSave = () => {
-  onAdd({
-    title,
-    description,
-    coach,
-    price: Number(price || 0),
-    status,
+  useEffect(() => {
+    if (open) {
+      axios.get("/api/admin/coaches").then((res) => {
+        const list = (res.data.data ?? []).map((c: any) => ({
+          id: c.profileId ?? c.id,
+          name: c.name,
+        }))
+        setCoaches(list)
+        if (list.length > 0) setCoach(String(list[0].id))
+      })
+    }
+  }, [open])
 
-    // ✅ เพิ่ม
-    startDate,
-    endDate,
-    classDays,
-  })
-
-  onClose()
-
-  
-}
+  const handleSave = () => {
+    onAdd({ title, description, coach, price: Number(price || 0), status, startDate, endDate, classDays })
+    onClose()
+  }
 
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center ">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
       <div className="bg-white w-full max-w-md rounded-xl shadow-xl">
-        <div className="px-6 py-4 border-b font-semibold text-blue-900">
-          Add Course
-        </div>
-
+        <div className="px-6 py-4 border-b font-semibold text-blue-900">Add Course</div>
         <div className="px-6 py-4 space-y-4">
-          <input
-            placeholder="Course title"
-            className="w-full border px-3 py-2 rounded text-blue-900"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+          <input placeholder="Course title" className="w-full border px-3 py-2 rounded text-blue-900"
+            value={title} onChange={(e) => setTitle(e.target.value)} />
+          <textarea placeholder="Description" className="w-full border px-3 py-2 rounded text-gray-400"
+            value={description} onChange={(e) => setDescription(e.target.value)} />
 
-          <textarea
-            placeholder="Description"
-            className="w-full border px-3 py-2 rounded text-gray-400"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-
-          <input
-            placeholder="Coach"
-            className="w-full border px-3 py-2 rounded text-gray-400"
-            value={coach}
-            onChange={(e) => setCoach(e.target.value)}
-          />
-          
-          <input
-            type="number"
-            placeholder="Price"
-            className="w-full border px-3 py-2 rounded text-blue-900"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            min={0}
-          />
-
-          {/* 📅 Dates */}
-          <div className="grid grid-cols-2 gap-3 text-gray-400">
-            <input
-              type="date"
-              className="border rounded-md px-3 py-2"
-              value={startDate ?? ""}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-            <input
-              type="date"
-              className="border rounded-md px-3 py-2"
-              value={endDate ?? ""}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-          </div>
-
-          {/* 🗓 Class Days */}
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-blue-900">
-              Class Days
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {[
-                { label: "Sun", value: 0 },
-                { label: "Mon", value: 1 },
-                { label: "Tue", value: 2 },
-                { label: "Wed", value: 3 },
-                { label: "Thu", value: 4 },
-                { label: "Fri", value: 5 },
-                { label: "Sat", value: 6 },
-              ].map((d) => {
-                const active = classDays.includes(d.value)
-                return (
-                  <button
-                    type="button"
-                    key={d.value}
-                    onClick={() =>
-                      setClassDays((prev) =>
-                        active
-                          ? prev.filter((v) => v !== d.value)
-                          : [...prev, d.value]
-                      )
-                    }
-                    className={`px-3 py-1 rounded-full text-sm border
-                      ${
-                        active
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : "bg-white text-gray-600"
-                      }`}
-                  >
-                    {d.label}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          <select
-            className="w-full border px-3 py-2 rounded text-gray-400"
-            value={status}
-            onChange={(e) =>
-              setStatus(e.target.value as CourseStatus)
-            }
-          >
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
+          <select className="w-full border px-3 py-2 rounded text-blue-900"
+            value={coach} onChange={(e) => setCoach(e.target.value)}>
+            {coaches.map((c) => (
+              <option key={c.id} value={String(c.id)}>{c.name}</option>
+            ))}
           </select>
+
+          <input type="number" placeholder="Price" className="w-full border px-3 py-2 rounded text-blue-900"
+            value={price} onChange={(e) => setPrice(e.target.value)} min={0} />
+
+          <div className="grid grid-cols-2 gap-3 text-gray-400">
+            <input type="date" className="border rounded-md px-3 py-2"
+              value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <input type="date" className="border rounded-md px-3 py-2"
+              value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-blue-900">Class Days</div>
+            <div className="flex flex-wrap gap-2">
+              {[{label:"Sun",value:0},{label:"Mon",value:1},{label:"Tue",value:2},{label:"Wed",value:3},{label:"Thu",value:4},{label:"Fri",value:5},{label:"Sat",value:6}].map((d) => (
+                <button key={d.value} type="button"
+                  className={`px-3 py-1 rounded-full text-sm border ${classDays.includes(d.value) ? "bg-blue-600 text-white border-blue-600" : "text-gray-600 border-gray-300"}`}
+                  onClick={() => setClassDays((prev) => prev.includes(d.value) ? prev.filter((x) => x !== d.value) : [...prev, d.value])}>
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="px-6 py-4 border-t flex justify-end gap-2">
-          <button onClick={onClose} className="text-blue-900 bg-gray-100 px-4 py-2 rounded">Cancel</button>
-          <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer text-gray-400">
-            Save
-          </button>
+        <div className="px-6 py-4 border-t flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 rounded border text-gray-600">Cancel</button>
+          <button onClick={handleSave} className="px-4 py-2 rounded bg-blue-600 text-white">Add</button>
         </div>
       </div>
     </div>
