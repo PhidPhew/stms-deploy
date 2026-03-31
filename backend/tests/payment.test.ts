@@ -14,10 +14,12 @@ jest.mock('@/lib/jwt', () => ({
 
 const auditLogMock = jest.fn().mockResolvedValue(true);
 jest.mock('@/lib/auditLog', () => ({
-  createLog: auditLogMock
+  createLog: jest.fn().mockResolvedValue(true),
 }));
 
 describe('Payment Flow E2E', () => {
+  const auditLogMock = require('@/lib/auditLog').createLog as jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
     

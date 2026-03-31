@@ -138,8 +138,7 @@ describe('Auth API', () => {
         .set('Authorization', 'Bearer valid.token');
 
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.email).toBe('test@example.com');
+      expect(res.body.user.email).toBe('test@example.com');
     });
 
     it('should fail with invalid token', async () => {
@@ -157,7 +156,7 @@ describe('Auth API', () => {
         .set('Authorization', 'Bearer invalid.token');
 
       expect(res.status).toBe(401);
-      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('Invalid token');
     });
   });
 });

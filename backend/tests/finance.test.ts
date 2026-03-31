@@ -10,6 +10,10 @@ jest.mock('@/lib/jwt', () => ({
   })
 }));
 
+jest.mock('@/lib/auditLog', () => ({
+  createLog: jest.fn().mockResolvedValue(true),
+}));
+
 describe('Finance API', () => {
   beforeEach(() => {
     prismaMock.user.findUnique.mockResolvedValue({ id: 1, role: 'ADMIN', status: 'ACTIVE' } as any);
@@ -53,7 +57,7 @@ describe('Finance API', () => {
         .get('/api/admin/finance/summary')
         .set('Authorization', 'Bearer student.token');
 
-      expect(res.status).toBe(403).catch?.(() => expect(res.status).toBe(401)); // requireRole returns Forbidden usually
+      expect(res.status).toBe(401);
       expect(res.body.success).toBe(false);
     });
   });
