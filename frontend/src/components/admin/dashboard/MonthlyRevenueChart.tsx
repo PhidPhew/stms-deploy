@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import axios from "@/lib/axios"
 import {
   BarChart,
@@ -18,26 +18,56 @@ const MONTH_LABELS: Record<string, string> = {
   "09": "September", "10": "October", "11": "November", "12": "December",
 }
 
-export function MonthlyRevenueChart() {
-  const [data, setData] = useState<any[]>([])
+/** Raw monthly rows from /api/admin/finance/summary `chartData` */
+export type MonthlyChartRawRow = {
+  month?: string
+  revenue?: number
+  expense?: number
+}
+
+type FormattedRow = {
+  month: string
+  revenue: number
+  expense: number
+  profit: number
+}
+
+function formatMonthlyChartData(monthly: MonthlyChartRawRow[]): FormattedRow[] {
+  return monthly.map((m) => {
+    const monthKey = m.month?.slice(5, 7)
+    const revenue = m.revenue ?? 0
+    const expense = m.expense ?? 0
+    return {
+      month: (monthKey && MONTH_LABELS[monthKey]) ?? m.month ?? "",
+      revenue,
+      expense,
+      profit: revenue - expense,
+    }
+  })
+}
+
+export type MonthlyRevenueChartProps = {
+  /** When set, chart uses this data (e.g. from parent summary). When omitted, fetches from the API. */
+  data?: MonthlyChartRawRow[]
+}
+
+export function MonthlyRevenueChart({ data }: MonthlyRevenueChartProps = {}) {
+  const [fetchedData, setFetchedData] = useState<FormattedRow[]>([])
 
   useEffect(() => {
+    if (data !== undefined) return
     axios.get("/api/admin/finance/summary").then((res) => {
       const monthly = res.data.data?.chartData ?? []
-      const formatted = monthly.map((m: any) => {
-        const monthKey = m.month?.slice(5, 7)
-        return {
-          month: MONTH_LABELS[monthKey] ?? m.month,
-          revenue: m.revenue ?? 0,
-          expense: m.expense ?? 0,
-          profit: (m.revenue ?? 0) - (m.expense ?? 0),
-        }
-      })
-      setData(formatted)
+      setFetchedData(formatMonthlyChartData(monthly))
     }).catch(() => {})
-  }, [])
+  }, [data])
 
-  if (data.length === 0) return (
+  const chartData = useMemo(() => {
+    if (data !== undefined) return formatMonthlyChartData(data)
+    return fetchedData
+  }, [data, fetchedData])
+
+  if (chartData.length === 0) return (
     <div className="bg-white rounded-xl p-6 shadow">
       <p className="text-sm text-gray-400">No financial data yet</p>
     </div>
@@ -58,7 +88,7 @@ export function MonthlyRevenueChart() {
       </div>
       <div className="w-full h-[420px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
+          <BarChart data={chartData}>
             <XAxis dataKey="month" tick={{ fill: "#475569", fontSize: 12 }} />
             <YAxis tick={{ fill: "#475569", fontSize: 12 }} tickFormatter={(v) => `฿${v / 1000}k`} />
             <Tooltip
