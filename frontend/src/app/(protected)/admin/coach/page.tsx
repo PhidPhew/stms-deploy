@@ -72,7 +72,7 @@ export default function CoachesPage() {
             await axios.put(`/api/admin/coaches/${id}`, { status: "active" })
             setCoaches((prev) =>
               prev.map((c) =>
-                c.id === id ? { ...c, status: "ACTIVE" } : c
+                c.id === id ? { ...c, status: "ACTIVE" as Coach["status"] } : c
               )
             )
           } catch { setError("Failed to activate coach") }
