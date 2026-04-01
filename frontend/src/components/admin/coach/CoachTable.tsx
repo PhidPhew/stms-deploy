@@ -13,6 +13,14 @@ type Props = {
   onActivate?: (id: number) => void
 }
 
+/** API may return JSON string for expertise; UI model uses string[]. */
+function expertiseLabels(expertise: Coach["expertise"]): string {
+  const raw = expertise as unknown
+  if (Array.isArray(raw)) return raw.join(", ")
+  if (typeof raw === "string") return raw.split(",").map((s) => s.trim()).filter(Boolean).join(", ")
+  return ""
+}
+
 export function CoachTable({
   coaches,
   onUpdate,
@@ -58,7 +66,7 @@ export function CoachTable({
               <tr key={c.id} className="border-b hover:bg-gray-50">
                 <td className="p-4 text-gray-400">{c.id}</td>
                 <td className="p-4 font-medium text-blue-900">{c.name}</td>
-                <td className="p-4 text-blue-900">{(Array.isArray(c.expertise) ? c.expertise : (c.expertise ? c.expertise.split(",") : [])).join(", ")}</td>
+                <td className="p-4 text-blue-900">{expertiseLabels(c.expertise)}</td>
                 <td className="p-4 text-blue-900">{c.totalCourses}</td>
                 <td className="p-4">
                   <span

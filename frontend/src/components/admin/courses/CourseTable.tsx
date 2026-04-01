@@ -33,11 +33,19 @@ type Props = {
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 function formatDays(days?: number[] | string) {
+  let arr: number[] = []
   if (typeof days === "string") {
-    try { days = JSON.parse(days) } catch { return days }
+    try {
+      const parsed = JSON.parse(days)
+      arr = Array.isArray(parsed) ? parsed.map((d: unknown) => Number(d)) : []
+    } catch {
+      return days
+    }
+  } else if (Array.isArray(days)) {
+    arr = days
   }
-  if (!days || days.length === 0) return "-"
-  return days.map((d) => DAY_LABELS[d]).join(", ")
+  if (arr.length === 0) return "-"
+  return arr.map((d) => DAY_LABELS[d] ?? "?").join(", ")
 }
 
 /* ================= TABLE ================= */

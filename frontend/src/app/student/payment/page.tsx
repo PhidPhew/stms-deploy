@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import axios from "@/lib/axios"
 import Link from "next/link"
@@ -27,7 +27,7 @@ const STATUS_LABEL: Record<PaymentStatus, string> = {
   approved: "Approved",
 }
 
-export default function StudentPaymentPage() {
+function StudentPaymentContent() {
   const [payments, setPayments] = useState<Payment[]>([])
   const searchParams = useSearchParams()
   const [sort, setSort] = useState<"latest" | "oldest">("latest")
@@ -184,6 +184,18 @@ export default function StudentPaymentPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function StudentPaymentPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-6 text-gray-500">Loading...</div>
+      }
+    >
+      <StudentPaymentContent />
+    </Suspense>
   )
 }
 

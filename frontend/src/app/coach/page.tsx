@@ -8,13 +8,15 @@ import axios from "@/lib/axios"
 
 /* ================= TYPES ================= */
 
+/** Matches GET /api/coach/schedule formatted rows */
 type TodayClass = {
   id: number
-  time: string
-  course: string
-  group: string
-  taughtSessions: number
-  incomePerSession: number
+  courseId?: number
+  courseTitle: string
+  level?: string
+  date: string
+  startTime: string
+  endTime: string
 }
 type CoachNotificationType =
   | "today"

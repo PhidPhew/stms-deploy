@@ -80,14 +80,17 @@ export function CourseCard({
         )}
 
         {/* Class Days */}
-        {(Array.isArray(course.classDays) ? course.classDays : []) && course.classDays.length > 0 && (
-          <div className="text-xs text-green-500">
-            Days:{" "}
-            {(Array.isArray(course.classDays) ? course.classDays : [])
-              .map((d) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d])
-              .join(", ")}
-          </div>
-        )}
+        {(() => {
+          const days = Array.isArray(course.classDays) ? course.classDays : []
+          return days.length > 0 ? (
+            <div className="text-xs text-green-500">
+              Days:{" "}
+              {days
+                .map((d) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d])
+                .join(", ")}
+            </div>
+          ) : null
+        })()}
 
         {/* Footer */}
         <div className="flex justify-between items-center pt-2">

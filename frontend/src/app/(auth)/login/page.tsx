@@ -2,14 +2,14 @@
 
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import axios from "@/lib/axios"
 import { setToken } from "@/lib/auth"
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const role = searchParams.get("role") // student | coach | admin
+  const roleHint = searchParams.get("role") // student | coach | admin
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -34,11 +34,11 @@ export default function LoginPage() {
     }
   }
 
-
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
       style={{ backgroundImage: "url('/_.png')" }}
+      data-role-hint={roleHint ?? undefined}
     >
       {/* overlay */}
       <div className="absolute inset-0 bg-black/20" />
@@ -99,5 +99,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-300">
+          Loading...
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   )
 }
