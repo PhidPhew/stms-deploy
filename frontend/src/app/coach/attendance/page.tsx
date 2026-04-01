@@ -83,7 +83,7 @@ export default function CoachAttendancePage() {
   }
 
   const progress = course
-    ? (checkedStudents.length / course?.students?.length ?? 1) * 100
+    ? (checkedStudents.length / (course?.students?.length || 1)) * 100
     : 0
 
   return (
